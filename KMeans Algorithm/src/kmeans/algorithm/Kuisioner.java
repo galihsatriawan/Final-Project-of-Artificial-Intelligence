@@ -21,11 +21,15 @@ public class Kuisioner {
     private double norm_rataan_nilai;
     private double norm_rataan_kehadiran;
     private String kluster;
+    private Kuisioner centroid;
+    private int centroid_ke;
+    private double jarak_c;
+    
 
     public Kuisioner() {
     }
     
-    public Kuisioner(String kode, String mata_kuliah, String kelas, String pengajar, String skor_kuisioner, String rataan_nilai, String rataan_kehadiran, double norm_skor_kuisioner, double norm_rataan_nilai, double norm_rataan_kehadiran) {
+    public Kuisioner(String kode, String mata_kuliah, String kelas, String pengajar, String skor_kuisioner, String rataan_nilai, String rataan_kehadiran, double norm_skor_kuisioner, double norm_rataan_nilai, double norm_rataan_kehadiran,String kluster) {
         this.kode = kode;
         this.mata_kuliah = mata_kuliah;
         this.kelas = kelas;
@@ -36,10 +40,20 @@ public class Kuisioner {
         this.norm_skor_kuisioner = norm_skor_kuisioner;
         this.norm_rataan_nilai = norm_rataan_nilai;
         this.norm_rataan_kehadiran = norm_rataan_kehadiran;
+        this.kluster = kluster;
     }
+
     public String getKode() {
         return kode;
     }
+    public double getJarak_c() {
+        return jarak_c;
+    }
+
+    public void setJarak_c(double jarak_c) {
+        this.jarak_c = jarak_c;
+    }
+
 
     public void setKode(String kode) {
         this.kode = kode;
@@ -123,6 +137,22 @@ public class Kuisioner {
 
     public void setKluster(String kluster) {
         this.kluster = kluster;
+    }
+
+    public Kuisioner getCentroid() {
+        return centroid;
+    }
+
+    public void setCentroid(Kuisioner centroid) {
+        this.centroid = centroid;
+    }
+
+    public int getCentroid_ke() {
+        return centroid_ke;
+    }
+
+    public void setCentroid_ke(int centroid_ke) {
+        this.centroid_ke = centroid_ke;
     }
             
 }
