@@ -157,5 +157,30 @@ public class KMeansAlgorithm {
         }
         
     }
+    static ArrayList<Ketercapaian> list_ketercapaian = new ArrayList<>();
+    public static void buat_list_ketercapaian(){
+        for(Kuisioner kui: seluruh_kuisioner){
+            String nama_dos = kui.getPengajar();
+            String mk = kui.getMata_kuliah();
+            String kelas = kui.getKelas();
+            String ketercapaian = kui.getCentroid_ke()+"";
+            Ketercapaian new_kt = new Ketercapaian(nama_dos, mk, kelas, ketercapaian);
+            list_ketercapaian.add(new_kt);
+        }
+    }
+    public static void insert_seluruh_kt_database(){
+        for(Ketercapaian kt: list_ketercapaian){
+            insert_ketercapaian(kt);
+        }
+    }
+    public static void insert_ketercapaian(Ketercapaian kc){
+        String sql="INSERT INTO tb_ketercapaian VALUES(\""+kc.getNama_dosen()+
+                "\",\""+kc.getMata_kuliah()+"\",\""+kc.getKelas()+"\",\""+kc.getKetercapaian()+"\")";
+        Database.update(sql);
+    }
+    public static void hapus_data_db(){
+        String sql ="DELETE FROM tb_ketercapaian";
+        Database.update(sql);
+    }
     
 }
