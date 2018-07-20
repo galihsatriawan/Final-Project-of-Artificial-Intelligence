@@ -56,6 +56,32 @@ public class KMeansAlgorithm {
         tampilkan_seluruh_data();
 //        System.out.println(seluruh_kuisioner.get(2).getKode());
     }
+    static Kuisioner centroid_prev[] = new Kuisioner[3];
+    static boolean cari_lagi(){
+        boolean skor = centroid_prev[0].getNorm_skor_kuisioner()==centroid[0].getNorm_skor_kuisioner();
+        boolean nilai = centroid_prev[0].getNorm_rataan_nilai()==centroid[0].getNorm_rataan_nilai();
+        boolean kehadiran = centroid_prev[0].getNorm_rataan_kehadiran()==centroid[0].getNorm_rataan_kehadiran();
+        boolean cari = !(skor && nilai && kehadiran);
+        return cari;
+    }
+    static void isi_prev_centroid(){
+        centroid_prev[0].setNorm_skor_kuisioner(centroid[0].getNorm_skor_kuisioner());
+        centroid_prev[0].setNorm_rataan_kehadiran(centroid[0].getNorm_rataan_kehadiran());
+        centroid_prev[0].setNorm_rataan_nilai(centroid[0].getNorm_rataan_nilai());
+        
+    }
+    static Kumpulan_kuisioner grup_centroid[] = new Kumpulan_kuisioner[3];
+    static void banyak_tiap_centroid(int banyak_centroid){
+        for(int i= 0;i<banyak_centroid;i++){
+            System.out.println("Banyak anak di Centroid "+(i+1)+" : "+grup_centroid[i].kuisioners.size());
+        }
+    }
+    static void data_centroid(int ke){
+        System.out.println("Centroid ke : "+ke);
+        System.out.println("Skor Kuisioner      : "+centroid[ke].getNorm_skor_kuisioner());
+        System.out.println("Rataan Nilai        : "+centroid[ke].getNorm_rataan_nilai());
+        System.out.println("Rataan Kehadiran    : "+centroid[ke].getNorm_rataan_kehadiran());
+    }
     static void set_centroid_awal(){
         for(Kuisioner data : seluruh_kuisioner){
             set_c_terdekat(data);
