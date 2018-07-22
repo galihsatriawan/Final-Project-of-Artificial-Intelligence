@@ -24,12 +24,18 @@ public class KMeansAlgorithm {
     // Penyimpanan Seluruh Data Kuisioner
     static ArrayList<Kuisioner> seluruh_kuisioner = new ArrayList<>();
     static Kuisioner centroid[] = new Kuisioner[3];
+    static Kuisioner centroid_prev[] = new Kuisioner[3];
+    static Kumpulan_kuisioner grup_centroid[] = new Kumpulan_kuisioner[3];
+    static int iterasi= 0;
     public static void main(String[] args) {
         // TODO code application logic here
         
         // Generate seluruh kuisioner ke variabel local
         dapatkan_kuisioner();
         
+        
+        //Hapus data ketercapaian
+        hapus_data_db();
         // Random 3 Centroid , ketiga nya harus beda
 //        int pc1 = (int) Math.round(Math.random())%180;
 //        int pc2 = (int) Math.round(Math.random())%180;
@@ -48,15 +54,65 @@ public class KMeansAlgorithm {
         centroid[0] = seluruh_kuisioner.get(pc1);
         centroid[1] = seluruh_kuisioner.get(pc2);
         centroid[2] = seluruh_kuisioner.get(pc3);
+        centroid_prev[0] = new Kuisioner();
+        centroid_prev[1] = new Kuisioner();
+        centroid_prev[2] = new Kuisioner();
+        // Definisi Awal
+        grup_centroid[0] = new Kumpulan_kuisioner();
+        grup_centroid[1] = new Kumpulan_kuisioner();
+        grup_centroid[2] = new Kumpulan_kuisioner();
+        //Belum punya kumpulan kuisioner
+        grup_centroid[0].kuisioners = new ArrayList<>();
+        grup_centroid[1].kuisioners = new ArrayList<>();
+        grup_centroid[2].kuisioners = new ArrayList<>();
         
         //Set seluruh Centroid awal pada data
-        set_centroid_awal();
+        set_centroid_tiap_kuisioner();
         
+        // Data-data Centroid
+        data_centroid(0);
+        data_centroid(1);
+        data_centroid(2);
+        banyak_tiap_centroid(3);
         // Tampilkan Data
-        tampilkan_seluruh_data();
+        //tampilkan_seluruh_data();
+        System.out.println("---------------------------------");
+        //Sebelum hitung maka simpan nilai sebelumnya
+        isi_prev_centroid();
+        hitung_centroid_baru(0);
+        hitung_centroid_baru(1);
+        hitung_centroid_baru(2);
+        set_centroid_tiap_kuisioner();
+        System.out.println("Iterasi Ke-"+(++iterasi));
+        // Data-data Centroid
+        data_centroid(0);
+        data_centroid(1);
+        data_centroid(2);
+        banyak_tiap_centroid(3);
+        //tampilkan_seluruh_data();
 //        System.out.println(seluruh_kuisioner.get(2).getKode());
+        // Selama Previous Centroid belum sama maka lakukan pencarian terus
+        while(cari_lagi()){
+            System.out.println("---------------------------------");
+            //Sebelum hitung maka simpan nilai sebelumnya
+            isi_prev_centroid();
+            hitung_centroid_baru(0);
+            hitung_centroid_baru(1);
+            hitung_centroid_baru(2);
+            set_centroid_tiap_kuisioner();
+            System.out.println("Iterasi Ke-"+(++iterasi));
+            // Data-data Centroid
+            data_centroid(0);
+            data_centroid(1);
+            data_centroid(2);
+            banyak_tiap_centroid(3);
+        }
+        buat_list_ketercapaian();
+        insert_seluruh_kt_database();
+        
+
     }
-    static Kuisioner centroid_prev[] = new Kuisioner[3];
+
     static boolean cari_lagi(){
         boolean skor = centroid_prev[0].getNorm_skor_kuisioner()==centroid[0].getNorm_skor_kuisioner();
         boolean nilai = centroid_prev[0].getNorm_rataan_nilai()==centroid[0].getNorm_rataan_nilai();
@@ -64,33 +120,58 @@ public class KMeansAlgorithm {
         boolean cari = !(skor && nilai && kehadiran);
         return cari;
     }
+
     static void isi_prev_centroid(){
         centroid_prev[0].setNorm_skor_kuisioner(centroid[0].getNorm_skor_kuisioner());
         centroid_prev[0].setNorm_rataan_kehadiran(centroid[0].getNorm_rataan_kehadiran());
         centroid_prev[0].setNorm_rataan_nilai(centroid[0].getNorm_rataan_nilai());
         
     }
-    static Kumpulan_kuisioner grup_centroid[] = new Kumpulan_kuisioner[3];
+ 
     static void banyak_tiap_centroid(int banyak_centroid){
         for(int i= 0;i<banyak_centroid;i++){
             System.out.println("Banyak anak di Centroid "+(i+1)+" : "+grup_centroid[i].kuisioners.size());
         }
     }
+
     static void data_centroid(int ke){
         System.out.println("Centroid ke : "+ke);
         System.out.println("Skor Kuisioner      : "+centroid[ke].getNorm_skor_kuisioner());
         System.out.println("Rataan Nilai        : "+centroid[ke].getNorm_rataan_nilai());
         System.out.println("Rataan Kehadiran    : "+centroid[ke].getNorm_rataan_kehadiran());
     }
-    static void set_centroid_awal(){
+    static void set_centroid_tiap_kuisioner(){
+        //hapus data Kumpulan kuisioner di grup
+        grup_centroid[0].kuisioners.clear();
+        grup_centroid[1].kuisioners.clear();
+        grup_centroid[2].kuisioners.clear();
         for(Kuisioner data : seluruh_kuisioner){
             set_c_terdekat(data);
         }
     }
+    static void hitung_centroid_baru(int centroid_ke){
+        // Hitung rata2 anaknya
+        double skor_kuisioner = 0;
+        double rataan_nilai = 0;
+        double rataan_kehadiran = 0;
+        for(Kuisioner kuis : grup_centroid[centroid_ke].kuisioners){
+            skor_kuisioner += kuis.getNorm_skor_kuisioner();
+            rataan_nilai += kuis.getNorm_rataan_nilai();
+            rataan_kehadiran += kuis.getNorm_rataan_kehadiran();
+        }
+        skor_kuisioner = skor_kuisioner/grup_centroid[centroid_ke].kuisioners.size();
+        rataan_nilai = rataan_nilai/grup_centroid[centroid_ke].kuisioners.size();
+        rataan_kehadiran = rataan_kehadiran/grup_centroid[centroid_ke].kuisioners.size();
+        
+        // Set centroid baru 
+        centroid[centroid_ke].setNorm_skor_kuisioner(skor_kuisioner);
+        centroid[centroid_ke].setNorm_rataan_nilai(rataan_nilai);
+        centroid[centroid_ke].setNorm_rataan_kehadiran(rataan_kehadiran);
+    }
     static void tampilkan_seluruh_data(){
         int i = 1;
         for(Kuisioner data : seluruh_kuisioner){
-            System.out.println(i+" | "+jarak(data, centroid[0])+" | "+jarak(data, centroid[1])+" | "+jarak(data, centroid[2])+" | "+data.getCentroid_ke()+" | ");
+            System.out.println(i+"||"+data.getNorm_skor_kuisioner()+"~"+data.getNorm_rataan_nilai()+"~"+data.getNorm_rataan_kehadiran()+"||            "+" | "+jarak(data, centroid[0])+" | "+jarak(data, centroid[1])+" | "+jarak(data, centroid[2])+" | "+data.getCentroid_ke()+" | ");
             i++;
         }
     }
@@ -114,7 +195,7 @@ public class KMeansAlgorithm {
     static Kuisioner set_c_terdekat(Kuisioner data){
         double jarak_c[] = new double[3];
         jarak_c[0] = jarak(data,centroid[0]);
-        jarak_c[1] = jarak(data,centroid[1]);
+         jarak_c[1] = jarak(data,centroid[1]);
         jarak_c[2] = jarak(data,centroid[2]);
         
         //Define Awal
@@ -131,10 +212,16 @@ public class KMeansAlgorithm {
         jarak_terdekat = jarak_c[pos_c];
         centroid_t = centroid[pos_c];
         
+        
+        
         // Set Centroidnya
         data.setCentroid(centroid_t);
         data.setJarak_c(jarak_terdekat);
         data.setCentroid_ke(pos_c);
+        
+        // Masukkan kedalam grup anak centroid
+        grup_centroid[pos_c].kuisioners.add(data);
+        
         //Jika dibutuhkan 
         return centroid_t;
     }
@@ -183,6 +270,7 @@ public class KMeansAlgorithm {
         }
         
     }
+
     static ArrayList<Ketercapaian> list_ketercapaian = new ArrayList<>();
     public static void buat_list_ketercapaian(){
         for(Kuisioner kui: seluruh_kuisioner){
@@ -194,19 +282,21 @@ public class KMeansAlgorithm {
             list_ketercapaian.add(new_kt);
         }
     }
+ 
     public static void insert_seluruh_kt_database(){
         for(Ketercapaian kt: list_ketercapaian){
             insert_ketercapaian(kt);
         }
     }
+    
     public static void insert_ketercapaian(Ketercapaian kc){
         String sql="INSERT INTO tb_ketercapaian VALUES(\""+kc.getNama_dosen()+
                 "\",\""+kc.getMata_kuliah()+"\",\""+kc.getKelas()+"\",\""+kc.getKetercapaian()+"\")";
         Database.update(sql);
     }
+
     public static void hapus_data_db(){
         String sql ="DELETE FROM tb_ketercapaian";
         Database.update(sql);
     }
-    
 }
